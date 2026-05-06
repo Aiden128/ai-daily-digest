@@ -8,9 +8,18 @@ layout: default
 
 ## 最新文章
 
+### AI Daily Digest（通用前沿）
 <ul>
 {% assign daily_pages = site.pages | where_exp: "p", "p.path contains 'daily/'" | sort: "path" | reverse %}
 {% for p in daily_pages limit:30 %}
+  <li><a href="{{ p.url | relative_url }}">{{ p.title | default: p.name | remove: '.md' }}</a></li>
+{% endfor %}
+</ul>
+
+### AI Coding Agents Digest（編程代理專區）
+<ul>
+{% assign agents_pages = site.pages | where_exp: "p", "p.path contains 'agents/'" | sort: "path" | reverse %}
+{% for p in agents_pages limit:30 %}
   <li><a href="{{ p.url | relative_url }}">{{ p.title | default: p.name | remove: '.md' }}</a></li>
 {% endfor %}
 </ul>
