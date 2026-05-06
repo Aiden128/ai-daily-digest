@@ -8,6 +8,8 @@ permalink: /daily/2026-05-06
 
 ## 今日頭條
 
+- **OpenAI 發布 GPT-5.5 Instant，幻覺率降低 52.5%，成為 ChatGPT 預設模型**（May 5）：OpenAI 推出 GPT-5.5 Instant 取代 GPT-5.3 Instant 作為 ChatGPT 的預設模型，面向數億用戶免費開放。根據內部評估，在高風險領域（醫學、法律、金融）的幻覺聲明減少 52.5%，使用者標記的困難對話中不準確聲明降低 37.3%。基準測試顯示：CharXiv-reasoning 從 75.0% 提升至 81.6%，MMMU-Pro 從 69.2% 提升至 76.0%，OmniDocBench 錯誤率從 14.6% 降至 12.5%。回應更簡潔（字數減少 30.2%、行數減少 29.2%），同時新增「記憶來源」功能讓用戶能查看並控制個人化回應所使用的上下文。對開發者而言，API 中已作為 `chat-latest` 上線，這可能是 2026 年影響最廣泛的模型更新。[連結](https://openai.com/index/gpt-5-5-instant/)
+
 - **Google 發布 Gemma 4 Multi-Token Prediction Drafters，推理速度提升 3 倍**（May 5）：Google DeepMind 為 Gemma 4 模型家族推出 Multi-Token Prediction（MTP）drafter，透過推測解碼（speculative decoding）架構，讓輕量級 drafter 模型同時預測多個未來 token，再由大型目標模型一次性驗證。這使得推理延遲降低高達 3 倍，且輸出品質與推理邏輯完全不變。目前已支援 LiteRT-LM、MLX、Hugging Face Transformers 與 vLLM。對開發者來說，這意味著在消費級硬體上執行 31B 模型也能獲得接近即時的回應，邊緣部署的實用性大幅躍升。[連結](https://blog.google/innovation-and-ai/technology/developers-tools/multi-token-prediction-gemma-4/)
 
 - **Anthropic 推出金融服務專用 Agent 模板與 Microsoft 365 整合**（May 5）：Anthropic 發布十個可直接執行的金融服務 agent 模板，涵蓋投標書製作、KYC 審查、月結關帳等最耗時的工作。同時推出 Microsoft 365 外掛程式，讓 Claude 能在 Excel、PowerPoint、Word 與 Outlook 之間自動攜帶上下文。Claude Opus 4.7 在 Vals AI 金融 agent 基準測試中達到 64.37%，領先業界。對金融業而言，這不是「未來願景」，而是本週就能上線的生產工具——但風險控管與人工覆核流程仍不可或缺。[連結](https://www.anthropic.com/news/finance-agents)
@@ -39,6 +41,8 @@ permalink: /daily/2026-05-06
 - **Yannic Kilcher** — 網站連線逾時，無法確認
 
 ## 企業前沿動態
+
+- **OpenAI**（May 5）：發布 GPT-5.5 Instant 取代 GPT-5.3 Instant 成為 ChatGPT 預設模型。這次更新不是「重大突破」，而是「數十億用戶的每日體驗提升」。核心改進包括：在高風險領域的幻覺減少 52.5%、不準確聲明減少 37.3%、回應簡潔度提升（字數減 30.2%、行數減 29.2%）。基準測試中，CharXiv-reasoning 達到 81.6%（+6.6%）、MMMU-Pro 達到 76.0%（+6.8%）、OmniDocBench 錯誤率降至 12.5%（-2.1%）。值得注意的是「記憶來源」（Memory Sources）功能——當回應被個人化時，用戶可看到哪些過去對話、文件或 Gmail 被引用，並可刪除或修正過時的上下文。安全卡片顯示，這是首個在「網路安全」與「生物化學準備」類別被評為「高能力」的 Instant 模型，OpenAI 已實施相應保護措施。對開發者而言，API 中已作為 `chat-latest` 上線，付費用戶仍可在設定中選擇 GPT-5.3 Instant，但只會保留三個月。這次更新的重要性在於，它證明了即使是「日常驅動模型」，通過控制幻覺、提升回應簡潔度與增加透明度，也能帶來可感知的用戶體驗改善。[連結](https://openai.com/index/gpt-5-5-instant/)
 
 - **Google DeepMind**（May 5）：為 Gemma 4 推出 Multi-Token Prediction（MTP）drafter，利用推測解碼將推理速度提升最高 3 倍。標準 LLM 推理受限於記憶體頻寬——處理器大部分時間在將數十億參數從 VRAM 搬到計算單元，只為了生成一個 token。MTP 透過輕量 drafter 預測多個未來 token，再由目標模型平行驗證，充分利用閒置計算資源。這對消費級硬體與邊緣部署意義重大，Gemma 4 31B 的實用性因此大幅提升。[連結](https://blog.google/innovation-and-ai/technology/developers-tools/multi-token-prediction-gemma-4/)
 
