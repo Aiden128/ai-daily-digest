@@ -14,8 +14,8 @@ permalink: /agents/2026-06-02
   - 終端實際影響：如果你正在用 Go 撰寫自訂的 AI 代理 TUI（例如狀態監控面板、多 agent 管理器），建議升級到 v2.0.7。對於一般使用者，這個修補版本也提升了依賴 bubbletea 的周邊工具（如 gum、glow、freeze）的穩定性。
 
 - **Aider main branch 大幅擴充模型支援：Claude 4.5/4.6、Gemini 2.5 Flash、DeepSeek Reasoner 悉數入列** (May 31 – Jun 1)
-  - 雖然 Aider 自 v0.86.0（2025 年 8 月）以來尚未發布正式版，但其 main branch 近期密集更新，新增了多個前沿模型的支援。根據官方歷史紀錄頁面，main branch 已加入：(1) Claude 4.5/4.6 模型支援並更新了模型別名（sonnet / haiku / opus）；(2) Gemini 2.5 Flash、Flash-Lite 以及 Gemini 3 preview 模型；(3) DeepSeek Reasoner 模型與 DeepSeek 的 prompt caching 成本資訊；(4) 改進的例外處理（BadGatewayError、ImageFetchError）。
-  - 技術上，Aider 作為「終端內的配對編程夥伴」，其模型支援廣度直接決定了使用者能在多少種後端上執行代理任務。Claude 4.5/4.6 的提前支援意味著 Aider 使用者可以在 Claude Code 正式發布前，就在 Aider 中試用 Anthropic 的最新模型。Gemini 2.5 Flash 的加入則讓成本敏感型使用者有了更便宜的選擇，而 DeepSeek Reasoner 的整合讓本地/中國模型生態與 Aider 的橋接更完整。
+  - 雖然 Aider 自 v0.86.0（2025 年 8 月）以來尚未發布正式版，但其 main branch 近期密集更新，新增了多個前沿模型的支援。根據官方歷史紀錄頁面，main branch 已加入：(1) Claude Sonnet 4.6 與 Haiku 4.5 模型支援並更新了模型別名（sonnet / haiku / opus）；(2) Gemini 2.5 Flash、Flash-Lite 以及 Gemini 3 preview 模型；(3) DeepSeek Reasoner 模型與 DeepSeek 的 prompt caching 成本資訊；(4) 改進的例外處理（BadGatewayError、ImageFetchError）。
+  - 技術上，Aider 作為「終端內的配對編程夥伴」，其模型支援廣度直接決定了使用者能在多少種後端上執行代理任務。Sonnet 4.6 與 Haiku 4.5 的提前支援意味著 Aider 使用者可以通過 Anthropic API 試用這些新模型。Gemini 2.5 Flash 的加入則讓成本敏感型使用者有了更便宜的選擇，而 DeepSeek Reasoner 的整合讓本地/中國模型生態與 Aider 的橋接更完整。
   - 終端實際影響：如果你使用 Aider 作為主要編碼代理工具，現在可以從 main branch 安裝以獲得最新模型支援。對於需要同時在多個模型後端間切換的開發者（例如 Anthropic API 用於複雜任務、Google Vertex 用於企業合規、DeepSeek 用於本地推理），Aider 正在成為一個真正「模型中立」的終端代理平台。
 
 - **Show HN 湧現終端 AI 代理新工具：Ouijit、Komi-learn、NoSleepAgent、Open Envelope 等專案揭示生態細化趨勢** (Jun 1)
@@ -80,7 +80,7 @@ Open Envelope 將「AI 代理團隊」的定義（角色、層級、升級路徑
 ## 研究焦點
 
 - **Open Envelope — 可組合 AI 代理團隊的開放 Schema 標準** (Show HN, Jun 1) — [文件](https://openenvelope.org/docs/schema/)
-  - Open Envelope 將「AI 代理團隊」的定義結構化為一個開源的 JSON schema（已登上 SchemaStore），描述代理、角色、層級、升級路徑、必要憑證與轉接器。採用 Elastic 的「開源引擎 + 託管服務」模式：規格與驗證完全開放，市場、計費與部署基礎設施則為專有服務。
+  - Open Envelope 將「AI 代理團隊」的定義結構化為一個開源的 JSON schema（已登上 SchemaStore），描述代理、角色、層級、升級路徑、必要憑證與轉接器。採用「open-core」模式：規格與驗證完全開放，市場、計費與部署基礎設施則為專有服務。
   - 技術意義：當企業開始部署「多代理團隊」時（例如規劃代理、編碼代理、審查代理、部署代理），他們需要一種標準方式來描述這些團隊的拓撲結構。Open Envelope 的 schema 讓 `.envelope.json` 檔案可以在任何 SchemaStore 感知的編輯器（VS Code、JetBrains）中自動獲得 IntelliSense 與驗證，降低了團隊定義的學習門檻。
   - 對終端開發者的啟示：如果你正在為團隊設計多代理編排流程，可以參考 Open Envelope 的 schema 設計來標準化角色與權限定義。即使不採用其託管平台，開放的 schema 本身也能作為內部文件化的基礎。
 
@@ -94,3 +94,21 @@ Open Envelope 將「AI 代理團隊」的定義（角色、層級、升級路徑
 ---
 
 > 本日 Agents Digest 聚焦終端 TUI 生態與 AI 編碼代理的配套工具。對於已涵蓋於 Daily Digest 的企業動態（OpenAI AWS 合作、Alphabet 融資、Meta AI 安全事件等），請參閱 [AI Daily Digest - 2026-06-02](/daily/2026-06-02)。
+
+---
+
+## 編者註（Editor's Note）
+
+以下修正來自本地 tmux session `realcoder-panel`（Claude Code Opus 4.7）的快速 fact-check：
+
+1. **模型命名說明**：原文「Claude 4.5/4.6 模型」的表述不準確。Anthropic 的命名傳統是「層級 + 版本號」，正確的說法是 **Sonnet 4.6** 與 **Haiku 4.5**（而非「Claude 4.5」或「Claude 4.6」）。已在正文中修正。
+
+2. **Aider 模型支援時間線說明**：原文「Aider 讓使用者可以在 Claude Code 正式發布前試用新模型」的說法容易誤導。Aider 是通過公開的 Anthropic API 訪問模型，並非「提早獲得」。若 API 已經釋出模型，任何客戶端（包括 Claude Code）都能使用。已在正文中修正為「通過 Anthropic API 試用」。
+
+3. **NoSleepAgent 權限提醒**：`pmset disablesleep` 在 macOS 上需要 **root/sudo 權限**。使用者安裝時可能會看到提示輸入管理員密碼。如果不想使用 `pmset`，可考慮 macOS 內建的 `caffeinate` 命令（無需 sudo）作為替代方案。
+
+4. **Open Envelope 模式說明**：原文「採用 Elastic 的「開源引擎 + 託管服務」模式」的說法不當。Elastic License 是一種軟體授權，而非「開放規格 + 付費 SaaS」的描述。正確的表述應為「open-core」或「開放規格 + 專有服務」。已在正文中修正。
+
+5. **版本資訊待驗證**：由於 fact-check panel 的知識截止點為 2026 年 1 月，部分版本號（如 bubbletea v2.0.7、Gemini 3 preview、Aider main branch 變更）無法完全確認。讀者建議自行驗證 release notes 與 repo URL。
+
+6. **隱私提醒**：Komi-learn 等「連續記憶」工具的實際儲存位置與隱私政策未在原文討論。使用者採用前請先確認記憶資料存放於本機還是雲端、以及是否有資料共享機制。
