@@ -44,6 +44,30 @@ v2.1.163 的 release notes 長度驚人，反映 Anthropic 正同時處理三條
 
 `hookSpecificOutput.additionalContext` 的引入讓 hooks 從「單純的攔截器」進化為「參與對話流程的合作者」。過去當 hook 觸發 Stop 或 SubagentStop 時，Claude 會將其視為錯誤並中斷任務；現在 hook 可以回傳額外上下文，讓 Claude 理解為什麼被停止，並據此調整後續策略。這對於「在特定條件下限制代理行為」的企業安全策略至關重要——例如，當代理嘗試寫入生產設定檔時，安全 hook 可以停止它並解釋「此路徑受保護，請改用 staging 環境」。
 
+### Cursor cloud agents 的工程課：從「移植本地 agent」到「構建作業系統層」
+
+6 月 2 日，Cursor 發表長文〈What we’ve learned building cloud agents〉，分享了一年來將 agent 從本地筆電移植到雲端虛擬機過程中的五大工程教訓。這篇文章對所有正在構建或部署終端/雲端 AI 代理的團隊具有直接參考價值。
+
+**開發環境就是產品**
+
+Cursor 團隊發現，影響 cloud agent 輸出品質的單一最大因素是「是否擁有完整的開發環境」。本地 agent 可以免費繼承你的筆電環境，但雲端 agent 必須從頭重建一切——而且令人驚訝的是，你很難判斷重建是否完美。環境缺陷不會以崩潰或錯誤訊息呈現，而是表現為「輸出品質的微妙下降」，你可能會誤以為是模型能力不足。隨著模型變得越來越聰明，環境設置已成為決定 agent 能否發揮全部潛能的關鍵因素。Cursor 最終重建了 VM 休眠與恢復、映像檔快速檢查點/還原/分叉、以及企業級 IT 基礎設施（secret redaction、網路策略、憑證管理）。
+
+**長時間運行 agent 需要 durable execution**
+
+早期 Cursor 採用「工作竊取（work-stealing）」架構，讓工作者節點可以接手 agent 並循環執行到完成。這本質上將本地架構移植到伺服器，結果非常脆弱——早期 beta 的可靠性僅約一個 9（90%）。為了解決 VM 故障、推論供應商中斷、EC2 節點下線等問題，Cursor 遷移至 Temporal workflow 引擎。遷移後可靠性超過兩個 9，Temporal 每天處理超過 5,000 萬個 actions、700 萬個唯一 workflows。內部數據顯示，**Cursor 自己 monorepo 中超過 40% 的 PR 已來自 cloud agents**，且比例持續上升。
+
+**解耦 agent、機器與對話狀態**
+
+Cloud agent 不再只是「一台機器上的一個迴圈」。一個 agent 可能在一台機器上運行、在多台機器上生成非同步子代理，或從本地啟動後將工作委派到雲端。Cursor 將 agent loop、機器狀態與對話狀態解耦為獨立組件。agent loop 存在於 Temporal 而非 VM 本身，因此可以獨立管理 pod 生命週期；對話狀態則採用高效的 append-only 儲存機制，支援流式更新，並能處理重試時的「rewind」——若 agent loop 在串流部分輸出後失敗並重試，客戶端可以偵測到、倒回串流並顯示新數據。
+
+**知道何時不要擋路**
+
+Cursor 的 harness 設計經歷了一個清晰的演變：早期不信任模型，harness 會在每次任務後雙重檢查、強制 commit 並 push；隨著模型變強，邏輯逐漸從 harness 移出，變成由 agent 控制的工具。一年前，多 repo 設置需要硬編碼 harness 行為；現在只需給 agent repo 佈局、暴露 branch 與 PR 工具，讓它自行決定如何工作。CI Autofix 也經歷了類似的簡化——早期 harness 內含抓取失敗日誌並寫入 VM 的邏輯，現在只需給 agent GitHub CLI 權限並自動將大型輸出寫入可搜尋的檔案。
+
+**對終端開發者的啟示**
+
+這篇文章的核心訊息是：cloud agent 的建設「越來越不像把本地 agent 移植到伺服器，越來越像圍繞它構建一個作業系統層」。對於同時使用 Claude Code（背景 session）、Codex CLI（app-server）或自建代理的終端開發者，Cursor 的經驗直接適用：如果你正在遠端伺服器上長時間運行 agent，你遲早會遇到「環境不一致導致品質下降」「節點故障導致任務中斷」「對話狀態與執行狀態耦合導致恢復困難」等問題。Cursor 選擇 Temporal 作為 durable execution 引擎是一個值得參考的決策——當你發現自己在重建 retry、scheduling、durability 等基元時，使用成熟的工作流引擎可能比自建更可靠。
+
 ---
 
 ## 核心工具更新
