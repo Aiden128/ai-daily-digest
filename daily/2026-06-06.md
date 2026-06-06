@@ -100,4 +100,22 @@ Vortex 是一個結合 Python 嵌入式前端語言與頁面中心（page-centri
 
 ---
 
+## 編者註 / Editor's Note
+
+本期 digest 經由 Claude Code Opus 4.7 實體快速審查，以下為技術事實與宣稱的修正、補充：
+
+1. **Google 與 SpaceX 「算力協議」**：SpaceX 並無運營資料中心，若報導屬實，更可能是 Starlink 提供邊緣連線或 Starbase 周邊土地租用，而非傳統意義的「資料中心算力」。文中「簽署短期算力協議」可能已將聯結性協議誤讀為算力採購。建議查閱 The Verge 原文確認實際內容。
+
+2. **Goedel-Architect 成績數據**：99.2% MiniF2F-test 及 88.8% PutnamBench 的數字極高，而「500 倍更便宜」未提供對照基準（分母選擇敏感，可能僅比較推理成本而非總成本）。作者背景（Arora、Chen、Jin 均為 Princeton 相關領域）可信，但建議讀者對這些數字保持健康的懷疑，尤其是「500x cheaper」這類無基準的宣稱。
+
+3. **Agent-Reach 合規性風險**：「無 API 金鑰讀取各平台」的實作可能依賴爬蟲或住宅代理，遇到平台 ToS 限制與 IP 封鎖風險。短期免費可用，但長期穩定性与合規性均有疑慮，使用前應評估法律風險。
+
+4. **Agent Memory 「首次系統級表徵」宣稱**：過度。MemGPT（2023）、Letta、Mem0、A-MEM 等早已對 agent memory 做過系統性分析。論文中的「first」可能僅限於某個特定定義（如 OS-style abstraction layer），而非廣泛意義上的「首次」。
+
+5. **Sam Altman 提議聯邦取得 OpenAI 股權**：此為 NOTUS 單一來源報導，尚未獲得 Reuters、Bloomberg、NYT 等主流媒體獨立證實。與 OpenAI 公開立場（私有公司轉型為盈利企業）亦存在矛盾，建議讀者視為「單一來源、待獨立證實」的訊息。
+
+6. **Ladybird 不再接受公開 PR**：AI 生成 PR 氾潰是真實趋勢（curl、Asahi Linux 均有類似抱怨），但 Ladybird 是否「完全停止」接收或僅改為 review-only 尚待確認。文中「首個明因此改變治理模式」的說法可能過強。
+
+---
+
 *AI Daily Digest*
