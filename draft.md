@@ -121,3 +121,21 @@ UEC 官方網站目前仍將 2026 年 1 月發布的 1.0.2 版規格列為最新
 ---
 
 *Network Daily Digest 由自動化流程每日生成，聚焦 RDMA、Ultra Ethernet、InfiniBand、SmartNIC/DPU 與資料中心網路架構。若您發現技術事實錯誤或希望建議內容來源，歡迎透過 GitHub Issues 回饋。*
+
+---
+
+## Editor's Note（實編修正後）
+
+本文稿在推送後送交 realcoder-panel（Claude Code Opus 4.7）進行事實檢查，以下是 panel 提出的技術修正與表述警告：
+
+1. **「3 ms re-adaptation splice」的上下文缺失**：3 ms 並非上界，而是在特定 chunk size、特定 KV 壓縮比、特定 fabric（IBGDA on H100）下測得的點值。若未交代 chunk 大小、壓縮比、PCIe vs NVLink 等參數，該數字無法跨場景外推。本文稿原文「約 3 ms」的說法過於簡略，應理解為「在論文測試的特定配置下，光是 contiguous chunk 的 re-adaptation 就需要約 3 ms」。
+
+2. **「Route/fetch/local 適用於所有 compressed-attention 架構」過度泛化**：論文中的 predicate 並非萬能。MLA 的壓縮比約為 70x（latent dim 對 head dim），才讓 query route 能夠贏過 cache move。傳統 MHA 無壓縮、GQA/MQA 的壓縮比僅 4–8x，break-even 點完全不同——GQA 可能直接 cache move 就更快。本文稿原來「適用於所有將 attention 單元縮小到 small chunks 的架構」的說法過於寬鬆，應限制為「MLA-like 高壓縮比架構」。
+
+3. **VCG auction 80% 降延遲的實驗性警告**：論文 2606.00490 的結果幾乎可確定為 simulation-only。XOR bidding + knapsack 為 NP-hard，實步作得用 ILP/heuristic；在 HPC 線上環境執行 VCG 通常過於昂貴（排程延遲太高）。此外，論文使用的 FCFS baseline 過弱——生產環境通常使用 backfill scheduler（如 Slurm），其效率遠優於純 FCFS。因此「降低 80%」是「比一個弱 baseline」的改善，而非「比生產排程器」的改善。本文稿已在上文補充「模擬結果」的說明，但讀者應注意其結果尚無部署證據。
+
+4. **「Fabric choice 由 probe latency 主導」的邊界**：論文結論在「small-chunk attention decode」場景下成立，但在 incast 或 collective 通訊（如 allreduce、all-to-all）場景，peak bandwidth 仍是重要考量。本文稿原來「選擇哪種策略不應該由 peak bandwidth 決定，而應該由 probe latency 決定」的絕對化論斷有誤導風險。
+
+5. **BBR-Copilot 的 fairness 風險**：外排式 probe traffic 可能與同路徑上的 BBRv1/v2/CUBIC flow 的探測週期打架，導致 fairness 退化。這是論文未提及但實務部署時應評估的風險。
+
+6. **IBGDA 的移植性上限**：IBGDA 限定於 NVIDIA CX7+ HCA，AMD 與 Intel fabric 目前無等價物。論文提出的成本模型雖然是通用的，但「在 device-initiated RDMA 上測得兩個係數」這個前提在非 NVIDIA 平台上尚不成立。
