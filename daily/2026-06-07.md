@@ -111,4 +111,20 @@ Anthropic 提交 S-1 草案，標誌著「AI 安全」從非營利使命轉向�
 
 ---
 
+## 編者註（Editor's Note）
+
+本次內容經由 Claude Code Opus 4.7（realcoder-panel）快速事實查核，提出以下修正與補充意見：
+
+1. **OpenAI Harness Engineering** — 「Ralph Wiggum Loop」為 OpenAI 團隊內部非正式稱呼，並非業界通用術語；1M LOC 與 1,500 PR 的數字出自 OpenAI 官方文章，但尚未經第三方獨立驗證。
+
+2. **Meta AI 聊天機器人駭客事件** — 攻擊手法（AI 聊天機器人接受攻擊者指定信箱發送密碼重置碼）屬於極其嚴重的身份驗證漏洞，不僅是 AI 問題，更是 Meta 後端授權設計缺陷。20,225 個帳號的數字來自資安週報（this.weekinsecurity.com），已於文中標示來源。
+
+3. **Anthropic S-1 與網路威脅報告** — S-1 為向 SEC 提交的機密荈案，尚未公開；832 個帳號、67.3% 使用 AI 生成惡意軟體等數據均來自 Anthropic 同日發布的《AI-Enabled Cyber Threats》公開報告，與 S-1 無關。文中已將兩者分為獨立條目呈現，並無混淆。
+
+4. **Google / SpaceX / xAI 計算合約** — CNBC 報導「每月高達 9.2 億美元」的金額極為龐大（年化約 110 億美元），可能為總合約價值被誤引為月費，或涵蓋更廣泛的服務範圍。讀者宜將此數字視為「上限估算」而非確定月費。
+
+5. **DeepSeek-R1 安全測試** — Reddit 用戶自行測評聲稱 100% 越獄成功率，但缺乏同儕審查或官方確認，屬於未經驗證的社群傳聞。文中已標示「資料來源有限，可靠性待確認」。
+
+---
+
 *AI Daily Digest*
