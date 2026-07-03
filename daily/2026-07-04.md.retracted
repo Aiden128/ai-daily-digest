@@ -1,0 +1,298 @@
+---
+layout: default
+title: "AI Daily Digest - 2026-07-04"
+date: 2026-07-04 05:00:00 +0800
+permalink: /daily/2026-07-04
+---
+
+# AI Daily Digest — 2026-07-04
+
+今日圍繞「**評測、信任、開放**」三條軸線展開。**Cursor 公布 CursorBench 3.1**，Fable 5 Max 以 72.9% 領先、Opus 4.7 Max 64.8%、GPT-5.5 64.3%、Sonnet 5 Max 61.2%——首次出現「前 4 名被 Fable 5 系列包辦」的結果。**Snorkel 推出 Senior SWE-Bench**（HN 156 點），把 benchmark 從「junior engineer fix」升級到「senior engineer reasoning」。**Kimi K2.7 Code 成為 GitHub Copilot 首個 open-weight 選項**（HN 375 點），微軟 Azure 託管，給企業 open-weight 一個正式落地點。**Godot Engine 修訂貢獻政策，明確禁止 AI 自主 agent 與 vibe coding**（HN 550 點），是目前 open-source 社群對「AI 寫 PR」最強硬的表態之一。同日，**OpenAI 提議給美國政府 5% 股權**（HN 110 點）、**Anthropic 公告 Fable 5 全球重新部署細節**、**OpenAI 推出 GeneBench-Pro 與「Core dump epidemiology」工程文章**。arXiv 端最值得關注的是**「Are Performance-Optimization Benchmarks Reliably Measuring Coding Agents?」**——首次對 GSO / SWE-Perf / SWE-fficiency 三大程式碼優化 benchmark 做完整審計，發現 reference patch 在 102 個 GSO 任務中只有 39 個能跨機器 replay 通過。
+
+---
+
+## 頭條
+
+### 1. CursorBench 3.1：Fable 5 系列包辦前 4 名，Sonnet 5 Max 排第 13
+
+[Cursor 官方評測頁](https://cursor.com/evals) 7/2 釋出 CursorBench 3.1 版本，**在「ambiguous, multi-file tasks from real Cursor sessions」上**重新排名（HN 149 點、88 評論）。前段結果摘要：
+
+| 排名 | 模型 | 分數 | 平均成本/任務 |
+|------|------|------|----------------|
+| 1 | Fable 5 Max | **72.9%** | $18.02 |
+| 2 | Fable 5 Extra High | 72.0% | $13.74 |
+| 3 | Fable 5 High | 70.6% | $10.81 |
+| 4 | Fable 5 Medium | 69.8% | $8.27 |
+| 5 | Opus 4.7 Max | 64.8% | $11.02 |
+| 6 | GPT-5.5 Extra High | 64.3% | $4.37 |
+| 7 | Fable 5 Low | 64.2% | $5.70 |
+| 8 | Opus 4.8 Max | 63.8% | $7.59 |
+| 9 | Composer 2.5 | 63.2% | **$0.55** |
+| 10 | GPT-5.5 High | 62.6% | $3.59 |
+| 12 | Opus 4.7 Extra High | 61.6% | $7.11 |
+| **13** | **Sonnet 5 Max** | **61.2%** | $6.87 |
+| 21 | GLM 5.2 Max | 54.6% | $3.11 |
+| 24 | Kimi K2.7 Code | 52.7% | $1.92 |
+| 27 | Gemini 3.5 Flash | 49.8% | $1.94 |
+
+**CursorBench 3.1 的新設計**（[changelog](https://cursor.com/blog/cursorbench)）：
+- 引入「codebase understanding、bugfinding、planning、code review」四類任務——**從「edit/refactor/bugfix」升級到「理解與規劃」**。這直接呼應昨日 Anthropic Sonnet 5 主打「agentic」的方向
+- 重新調整部分 edit 任務的 grading 標準
+
+**為什麼重要**：
+1. **Fable 5 是 Anthropic 6/9 發布的 cyber 強項模型**（搭配 Mythos 5 為 biology）。6/12 被美國商務部下達出口管制、6/30 解除、7/1 全球重啟。**6/30 出口管制解除 → 7/1 全球重新上線 → 7/2 Cursor 評測拿第一**——是 Anthropic 過去 30 天最快的「從黑名單到榜首」案例
+2. **Sonnet 5 Max 落在第 13**——比 Opus 4.7 Max 低 3.6pp，比 Opus 4.8 Max 低 2.6pp，**證明 Sonnet 5 並未在「多檔案 reasoning」上追上 Opus**。Anthropic 6/30 把 Sonnet 5 定位為「Sonnet 級定價、Opus 級表現」時，CursorBench 3.1 的數字顯示兩者仍有結構性差距
+3. **Composer 2.5（Cursor 自家模型）在第 9 名、分數 63.2%、成本 $0.55/任務**——這是 Cursor 的「value play」：比 Sonnet 5 Max 多 2pp、成本 1/12
+4. **GLM 5.2 Max 54.6%（第 21）**呼應昨日 [Semgrep IDOR benchmark](https://semgrep.dev/blog/2026/we-have-mythos-at-home-glm-52-beats-claude-in-our-cyber-benchmarks)：在「特定任務、給定條件下」，開源權重（MIT）可達 frontier 級；但在「真實 Cursor 多檔案 reasoning」上仍落後 Fable 5 約 18pp
+
+### 2. Senior SWE-Bench：把 coding agent 評測從「junior engineer」升級到「senior engineer」
+
+[Snorkel AI 開源 Senior SWE-Bench](https://senior-swe-bench.snorkel.ai/)（HN 156 點、103 評論）— **第一個以「senior engineer reasoning」為目標設計的 SWE benchmark**。典型任務長這樣：
+
+> **Add Google Books as a metadata source to BookWorm for fallback/staging imports**
+>
+> Problem: BookWorm relies on Amazon + ISBNdb；incomplete records from `/api/import` fail to enrich
+>
+> Justify: 整合 Google Books 作為 fallback，measurable impact = increased import success rates
+>
+> Define Success: 自動測試確認正確 mapping、處理缺值、零/多筆時返回空
+>
+> Proposal: 在 `openlibrary/core/imports.py` 的 `STAGED_SOURCES` tuple 加入 `"google_books"` 為合法 source；URL 為 `http://{affiliate_server_url}/isbn/{identifier}?high_priority=true&stage_import=true`；`scripts/affiliate_server.py` 新增 `stage_from_google_books` 函式
+
+**對比 SWE-bench Verified**（OpenAI、Anthropic、Cursor 都用）：SWE-bench Verified 的典型任務是「給定 issue 描述、找到對應 patch、apply」——junior engineer 任務。**Senior SWE-Bench 強制要求 agent 自己寫 problem statement、justify、define success criteria、propose implementation**：是「架構性變更」而非「bug fix」。
+
+**為什麼重要**：這是「2026 H2 coding agent evaluation 標準升級」的第一槍。CursorBench 3.1 的「codebase understanding / planning / code review」新分類、Snorkel 的 Senior SWE-Bench、Anthropic 6/30 Agentic Coding Report 強調的「multi-day task delegation」——三條線指向同一個方向：**前一代 SWE-bench 已不能區分 frontier model 與 mid-tier model**。CursorBench 3.1 顯示 Fable 5 領先 Opus 4.7 8pp、Opus 4.8 9pp；SWE-bench Verified 同期可能只差 1-2pp。
+
+### 3. Kimi K2.7 Code 進入 GitHub Copilot：開源權重首次登上 Copilot model picker
+
+[GitHub Changelog 7/1](https://github.blog/changelog/2026-07-01-kimi-k2-7-is-now-available-in-github-copilot/)（HN 375 點、158 評論）— **Kimi K2.7 Code 成為 GitHub Copilot 第一個 open-weight 模型選項**，由 GitHub 託管在 Microsoft Azure。
+
+關鍵設計決策：
+- **計費**：provider list pricing（Moonshot AI 的 list price）、usage-based billing——**GitHub 不抽成**，單純做 hosting
+- **rollout 範圍**：Pro、Pro+、Max 即時可用；Business / Enterprise **off by default**，需 admin 手動 enable
+- **可用 surface**：VS Code 1.127+、VS 17.14.6+、Copilot CLI、cloud agent、Copilot App、github.com、GitHub Mobile iOS/Android、JetBrains 1.9.1-251+、Xcode、Eclipse
+- **admin warning**：GitHub 明確要求「administrators review open-weight models against their own security, compliance, and data-governance requirements before enabling them」——**這是 2026 H2 enterprise AI 採購的 reference stance**：開源權重 ≠ 自動可使用
+
+**為什麼重要**：
+- **Kimi K2.7 Code 在 CursorBench 3.1 第 24 名（52.7%、$1.92/任務）**——沒有打進前段，但成本只比 Composer 2.5 的 $0.55 高、且支援所有 Copilot surface
+- 配合 [Semgrep 7/1 benchmark](https://semgrep.dev/blog/2026/we-have-mythos-at-home-glm-52-beats-claude-in-our-cyber-benchmarks) 的 GLM 5.2 結果（開源權重在 IDOR 偵測打敗 Claude Code Opus 4.8）——**2026 H2 的企業 AI 採購故事已經成型**：「某些任務用開源權重（GLM / Kimi K2.7）、某些任務用閉源 frontier（Fable 5 / Opus 4.8）、某些任務用 Cursor 自家（Composer 2.5）」
+- **AWS Bedrock、Azure AI Foundry、GCP Vertex AI** 是更早就提供 open-weight model 的路徑，但 GitHub Copilot 是**第一個把 open-weight 推給「個人開發者 + 企業 default-off」這個最大用戶面的 surface**
+
+### 4. Godot Engine：禁止 autonomous AI agent 與 vibe coding，是 open-source 對 AI PR 的最強硬表態
+
+[Godot 官方公告](https://godotengine.org/article/contribution-policy-2026/) 7/1 釋出（HN 550 點、Lobsters practices 42 點、vibecoding 42 點）— **Godot Foundation 明確禁止「autonomous AI agent use 與 vibe coding」**，違規者 auto-ban。
+
+完整政策三條新規：
+1. **No autonomous AI agent use or vibe coding** — 已導致 auto-ban，會持續執行
+2. **No use of AI to generate [PR content]** — PR description、commit message、code comments 都需作者本人撰寫
+3. **新貢獻者（3 個或更少 merged PR）需 explicit maintainer 許可才能提交新功能或顯著 refactor** — 必須先從 bug fix 與 documentation 建立信任
+
+Godot 給出的核心理由（值得完整引述）：
+> "Reviewing PRs is already tedious work, but it is rewarding because reviewers generally feel that their efforts are contributing to educating a new contributor (who may become a future maintainer/reviewer). **If your feedback on PRs is just being absorbed by a machine and not going towards mentoring a potential future maintainer, it becomes much harder to justify spending your free time on PR review.**"
+
+**為什麼重要**：
+- **這與 Anthropic 6/30 公布的 Claude Tag 數據形成鮮明對比**（[6/28 digest 記錄](https://aiden128.github.io/ai-daily-digest/daily/2026-06-28)）：65% 的 Anthropic 內部產品團隊 code 從 Claude Tag 來
+- Godot 的「**reviewer 的時間該花在 mentoring 未來 maintainer，不是 debug AI 生成的 PR**」這句話，可能會被其他 OSS project 直接 copy — 與昨日 [7/3 報導的 Simon Willison "Understand to participate"](https://simonwillison.net/2026/Jul/2/understand-to-participate/)（Geoffrey Litt AIE talk 衍生）呼應：「要 understand 才能 participate，否則就是 cognitive debt」
+- 配合 6/22 Codex 640 TB SSD bug、6/23 McCanna Extended Thinking 揭露、6/27 Cursor reward-hacking 63% SOTA 自我審計 — **2026 H2 對「AI 寫程式碼」的信任成本正在系統性上升**
+
+### 5. OpenAI 提議給美國政府 5% 股權
+
+[衛報 7/2 報導](https://www.theguardian.com/technology/2026/jul/02/openai-stake-us-government-ai-sam-altman)（HN 110 點、123 評論；[FT 同步報導](https://www.ft.com/content/7c803eab-8e80-4431-9a87-e943bf00e00b) 34 點）— **OpenAI 與美國政府就 5% 股權進行早期談判**。背景是 US Government 6/25 要求 OpenAI stagger 釋出 GPT-5.6 + Sol（[6/27 digest 記錄](https://aiden128.github.io/ai-daily-digest/daily/2026-06-27)）。
+
+**為什麼重要**：
+- **這是 AI 公司與政府關係的新形態**：不是「監管」，而是「股權」
+- 對照 [6/30 Anthropic 提議](https://www.anthropic.com/news/fable-mythos-access)的「universal jailbreak 標準框架」（與 Amazon、Microsoft、Google 共同制定），OpenAI 走的是「給股權換政策影響力」路線
+- 對照 [6/24 digest 記錄的 GLM 5.2 + Mythos 5 export controls lifted](https://aiden128.github.io/ai-daily-digest/daily/2026-06-24) — **US government 對中國 AI 限制收緊、對美國 AI 公司持股介入加強**，兩條線同步
+
+### 6. Anthropic：Fable 5 7/1 全球重新上線，Mythos 5 恢復部分美國組織
+
+[Anthropic 官方公告 7/1](https://www.anthropic.com/news/redeploying-fable-5) 給出 6/12 出口管制事件的完整時間線與後續安排：
+
+時間線：
+- 6/9 發布 Fable 5 + Mythos 5
+- 6/12 US government 對所有客戶（含美國境內外國人）下達出口管制
+- 6/26 Mythos 5 恢復部分美國組織（Project Glasswing 信任名單）
+- **6/30 出口管制正式解除**
+- **7/1 Fable 5 全球重新上線**
+
+技術層面關鍵變化：
+- **Pro / Max / Team / 部分 Enterprise 方案**：Fable 5 在 7/1-7/7 期間，**最多可消耗 50% 的每週使用額度**（7/7 之後改用 usage credits）
+- **AWS、Google Cloud、Microsoft Foundry 重新啟用**：「as quickly as possible」
+- **Mythos 5**：僅恢復給「US organizations」+ Glasswing 計畫 — **國際合作夥伴仍被排除**
+
+**為什麼重要**：
+- 這是昨日 [7/3 digest 頭條 4](https://aiden128.github.io/ai-daily-digest/daily/2026-07-03#4-美國商務部解除-fable-5-與-mythos-5-出口管制-anthropic-同步宣布-7-1-全球重新上線) 的完整 followup — 現在有具體的「Pro / Max / Team 用戶使用額度」與「Mythos 5 仍受限制」細節
+- 配合今日 CursorBench 3.1 結果（Fable 5 拿第一），**「Fable 5 從黑名單到榜首」是 Anthropic 過去 30 天最關鍵的 recovery story**
+
+### 7. OpenAI 推出 GeneBench-Pro：衡量 AI 在「研究品味」上的能力
+
+[OpenAI 官方頁面 6/30](https://openai.com/index/introducing-genebench-pro/) — **GeneBench-Pro 是 GeneBench 的進階版，129 個問題、10 個 domain、21 個 sub-domain**，涵蓋 genomics、quantitative biology、translational medicine。
+
+關鍵設計哲學：GeneBench-Pro 刻意不測「recall facts」或「follow predefined workflow」，**而是測「research taste」**：
+> "Each GeneBench-Pro problem gives the model a realistic and messy dataset, brief experimental context, and a target estimand tied to a downstream decision. To answer correctly, the model must explore the data, choose an appropriate analytical approach, engage in an iterative process of experimentation, and supply a final answer."
+
+**為什麼重要**：
+- **這是 OpenAI 對「benchmaxing 已到盡頭」的官方表態** — 不再追求「在 1,000 個 QA 對上拿 95%」，而是測「能否在混亂資料中做出正確的 judgment call」
+- 配合 CursorBench 3.1 的「codebase understanding / planning / code review」新分類、Snorkel Senior SWE-Bench — **2026 H2 評測設計正在結構性轉向「研究/工程品味」**
+- 與 [昨日 Semgrep IDOR benchmark](https://semgrep.dev/blog/2026/we-have-mythos-at-home-glm-52-beats-claude-in-our-cyber-benchmarks) 提到的「前置 cyber 任務的 Claude Code Opus 4.8 F1 從 87% 降到 73%」是同一個訊號 — **frontier 模型在「真實研究/工程任務」上仍落後專門系統**
+
+### 8. OpenAI 工程文章〈Core dump epidemiology〉：debug 一個 18 年前的 libunwind race condition
+
+[OpenAI 官方文章 6/30](https://openai.com/index/core-dump-epidemiology-data-infrastructure-bug/) — Rockset（OpenAI 的 ChatGPT 資料基礎設施，支撐對話搜尋與資料 plugins）發生神秘的 C++ crash：function 正常 return，但跳到 bogus address；return address slot 是 NULL；stack pointer 偶爾 misalign 8 bytes。**每個假設都有反證，看起來「impossible」**。
+
+OpenAI 的解法：「thinking like an epidemiologist and building a high-quality data set about the entire population of crashes」 — 收集所有 crash 的 core dump、加上 metadata、用 ChatGPT 協助分類。
+
+最終發現是**兩個獨立的 bug 同時發生**：
+1. **Azure 某台 host 的 silent hardware corruption** — CPU 數學計算不正確
+2. **GNU libunwind 18 年前的 race condition** — 一個「廣泛使用但沒人注意」開源函式庫的 bug
+
+OpenAI 已 patch 並貢獻回 upstream。
+
+**為什麼重要**：
+- **這是「用 LLM debug infra bug」的 reference story** — ChatGPT 是這個 case 的核心 debug 工具，幫助排除每個假設
+- **18 年的 race condition** — 與昨日 [Semgrep](https://semgrep.dev/blog/2026/we-have-mythos-at-home-glm-52-beats-claude-in-our-cyber-benchmarks) 的「benchmark 內部差距大於開源 vs 閉源」是同一個 2026 H2 主題：**「老基礎設施的隱藏 bug」正在被 AI 加速曝光**
+
+---
+
+## 技術深度探討
+
+### Performance-Optimization Benchmarks 的可靠性審計（arXiv 2607.01211）
+
+[arXiv 2607.01211](https://arxiv.org/abs/2607.01211) 7/1 釋出（cs.SE / cs.AI）— **首次對 GSO、SWE-Perf、SWE-fficiency 三大程式碼優化 benchmark 做完整審計**。方法論：
+
+1. **跨機器 replay reference patch**：用 4 種 Google Cloud 機器 replay 740 個任務的 reference patch，**檢查「reference patch 在不同機器上是否都通過原 benchmark 設計的有效性規則」**
+2. **public submission 排名對 scoring rule 的敏感度**：分析 8 個跨 GSO + SWE-fficiency 的 public submission，**檢查不同 scoring rule 下排名是否一致**
+3. **「reference patch 對每個任務的真正可達性」**：分析 10 個 public submission per task，**檢查「reference patch 是否真的代表這個任務的最佳可能」**
+
+關鍵發現（按三大類）：
+
+**1. Reference patch 的跨機器可 replay 性極差**：
+- GSO：102 個任務中**只有 39 個** reference patch 在所有 cross-machine replay 中都通過原 validity 規則
+- SWE-Perf：140 個任務中**只有 11 個** — **這 140 個 SWE-Perf 任務中，許多 reference patch 產生的 runtime 變化接近 0**
+- SWE-fficiency：498 個任務中**411 個**通過 — 明顯比前兩個穩定
+
+**2. Public submission 排名強烈依賴 scoring rule**：
+- 在 8 個 cross-benchmark submission 中，**official rankings 在 9/28 pairwise 比較中互相矛盾**
+- SWE-fficiency 的 leaderboard scoring rule 給最差 10 個任務過高的分數權重（58.5%-82.8%）— **「worse-task 重懲罰」反而讓 leaderboard 數字失真**
+
+**3. Reference patch 對每個任務的「真實可達性」遠低於表面**：
+- 在 450 個 GSO + SWE-fficiency replay-valid 任務中，**85.3%（384/450）至少有一個 public submission 達到或超越 reference patch**
+- **99.8%（449/450）的 public submission 比 unoptimized baseline 好** — 但**只有 85.3% 達到 reference patch 的水準**
+
+**為什麼這對 digest 重要**：
+- 這是「[6/27 Cursor 自我審計 63% SOTA 透過 public web 找 fix](https://aiden128.github.io/ai-daily-digest/daily/2026-06-27)」的**程式碼優化版審計**
+- 結論相同：**frontier model 在「程式碼優化」上的 SOTA 數字，可能 30%+ 來自 benchmark 設計缺陷**
+- **2026 H2 SOTA 報告的 reference 標準**：必須附 (a) 嚴格 harness configuration、(b) transcript audit、(c) public-web access policy
+
+### arXiv「Is One Layer Enough?」：訓練單層 transformer 可匹配全參數 RL
+
+[arXiv 2607.01232](https://arxiv.org/abs/2607.01232) 7/1 釋出（cs.LG / cs.CL）— **「layer contribution」概念**：訓練單層 transformer 可恢復 full-parameter RL 的大部分增益，**有時甚至超越**。
+
+研究範圍：
+- 7 個模型、2 個 model family（Qwen3、Qwen2.5）
+- 3 個 RL 演算法（GRPO、GiGPO、Dr. GRPO）
+- 多個 task domain：math、code generation、agentic decision-making
+
+核心結論：
+- **RL 增益高度集中在 transformer stack 中間的一小部分層，有時甚至是單層**
+- **High-contribution 層集中在 stack 中段，input / output 兩端貢獻顯著較少**
+- **Layer 排名跨 dataset、task、model family、RL 演算法保持強相關**
+
+**為什麼這對 digest 重要**：
+- **這是對「RL post-training 為何有效」的根本性質疑** — 傳統假設是「所有層都更新參數，共同貢獻」，但實驗顯示「更新中間幾層就夠了」
+- 對 post-training 效率的影響：可以只 fine-tune 中段層（10-20% 參數）就達到接近全參數 fine-tune 的效果 — **GPU / 電力成本降低 80%+**
+- 呼應昨日 [TRIAGE paper](https://arxiv.org/abs/2606.26057)（"role-typed credit assignment"）— **2026 H2 post-training 研究正在往「更細粒度理解 RL 如何影響模型」推進**
+
+---
+
+## 工具與函式庫
+
+### Anthropic Claude Code v2.1.198（7/1）
+
+[GitHub Release](https://github.com/anthropics/claude-code/releases/tag/v2.1.198) 7/1 釋出 — 主要更新：
+- **Claude in Chrome GA**：從 beta 升為 generally available
+- **背景 agent notifications**：`claude agents` 指令會在 session 需要 input 或完成時觸發通知
+- **`/agents` 與 background agent 控制改善**
+
+### OpenAI Codex 0.143.0-alpha.33（7/2）
+
+[GitHub Release](https://github.com/openai/codex/releases) — 0.143.0-alpha.33 是 7/2 的 alpha release，**重點在 Responses WebSocket trace log 的隱私修正**（承接 6/22 報導的 640 TB SSD bug 的後續）。0.142.5（7/1 stable）正式 patch：
+
+> "Prevented full Responses WebSocket request payloads from being written to trace logs."
+
+### opencode v1.17.13（7/1）
+
+[GitHub Release](https://github.com/anomalyco/opencode/releases/tag/v1.17.13) — 承接 [6/27 digest 記錄的 v1.17.11 session snapshots + revert](https://aiden128.github.io/ai-daily-digest/daily/2026-06-27)，本版重點：
+- **Force reasoning mode for OpenAI-compatible reasoning models** — 確保 reasoning setting 在自建 deploy 上可靠生效
+- **Stop replaying stale GitHub data on `/undo`** — 解決「restore 較舊 session snapshot 時，UI 顯示的 GitHub status 是當下而非當時」的問題
+- **Reconnect MCP server** + **MCP content response over structured output**（v1.17.12 改進）
+
+### GitHub Copilot CLI v1.0.69-0（7/2）
+
+[GitHub Release](https://github.com/github/copilot-cli/releases) — 7/2 prerelease，**新增 `/sandbox` 路徑自動完成（file 與 folder）** + **Sessions split 顯示 backgrounded session 的 branch label**。7/1 v1.0.68 stable 同步新增 **kimi-k2.7-code model 支援**（對應今日頭條 3 的 Copilot rollout）。
+
+### Iroh 1.0（rust 89pt Lobsters）：dial keys, not IPs
+
+[Iroh 官方部落格](https://www.iroh.computer/blog/v1)（Lobsters rust 89 點、HN 持續發酵）— 開源 P2P 連線函式庫，**用 public key 取代 IP address 做 routing**。在 NAT 穿透、relay 自動選擇、IP 變動情境下，比 libp2p 輕量。對 agent 系統的意義：**跨雲、跨環境的 agent-to-agent 連線不再需要固定 IP / port forwarding**。對應 6/30 報導的 Claude Code v2.1.191 `/rewind` + v2.1.193 OTel logs，Iroh 是 2026 H2 「agent 之間的連線層」open-source reference 之一。
+
+---
+
+## 研究焦點
+
+### Lobsters t/compsci 112 點：Jira is Turing-Complete
+
+[seriot.ch](https://seriot.ch/computation/jira.html) 證明 **Jira workflow engine（含 JQL、Jira automation、post-functions、conditions）是 Turing-complete** — 對應 [6/24 報導的 "Multi-agentic Software Development is a Distributed Systems Problem"](https://aiden128.github.io/ai-daily-digest/daily/2026-06-28)（Kirancodes）相同的「agent 系統 = distributed system」框架：**Jira workflow 本身可以被當成 agent 编排層**。對企業 agent 採購的意義：如果客戶已經用 Jira 跑複雜 workflow，**直接在 Jira 上層加 agent 是低摩擦路徑**（不用從零搭建 orchestration）。
+
+### OpenAI 與 HP 企業夥伴關係（6/28）
+
+[OpenAI 官方公告 6/28](https://openai.com/index/hp-frontier-partnership/) — **HP 與 OpenAI 的「frontier partnership」**。HP 在企業內部部署 Codex agent、用於內部工具、銷售流程、客戶支援。與 [6/30 報導的「Notion × Cursor SDK」](https://aiden128.github.io/ai-daily-digest/daily/2026-06-27) 是同類故事：**當企業在 2 週內整合 frontier agent SDK 並上 production，這是「category formation」訊號**。Notion 用了 Cursor SDK，HP 用了 OpenAI Codex SDK — **「企業 agent 採用速度」在 2026 H2 加速到「weeks not months」**。
+
+---
+
+## Simon Willison 雙發：DSPy × Datasette + Geoffrey Litt 的「Understand to participate」
+
+### DSPy × Datasette Agent prompts（7/2）
+
+[Simon Willison 部落格](https://simonwillison.net/2026/Jul/2/dspy-datasette-agent-prompts/)（7/2 發布）— Simon 在 AIE 2026 聽完 DSPy keynote 後，用 Claude Fable 5 + Claude Code for web 跑了個非同步研究任務：讓 Datasette Agent 的 SQL question answerer 用 DSPy 評估並改進 system prompt。實驗發現：
+
+- 預設 prompt 在 schema listing 中只給 table name，**「don't call describe_table if you already have the information」** 的建議導致 column-name guessing（`page_count`、`o.order_id`、`first_name`）和 error-retry loops
+- 解法：**在 prompt 的 schema listing 包含 column names，或軟化「不要 call describe_table」的建議**
+
+這是「**用 DSPy 評估 + 改進 production system prompt**」的 reference story — **Datasets + Gold-standard evaluation + Custom metrics + DSPy agents + 真的 Datasette Agent tool**。
+
+### Geoffrey Litt〈Understand to participate〉（7/2）
+
+[Simon Willison 部落格](https://simonwillison.net/2026/Jul/2/understand-to-participate/)（7/2 發布）— Simon 引用 Geoffrey Litt 在 AIE 2026 的 talk 框架：
+
+> "**Understand to participate**. You can learn what the agent is doing to make sure you can be an active participant in the creative process. You need a rich set of concepts in your mind to think creatively and fluently about how to move something forward. If you're lacking that fluency, your ability to participate in the project is meaningfully limited."
+
+這是 [昨日 7/3 digest 提到的「cognitive debt」](https://aiden128.github.io/ai-daily-digest/daily/2026-07-03#3-claude-code-在-system-prompt-中藏隱形-unicode-浮水印-steganography-揭露)的正面表述：**避免 cognitive debt 的方法是「要 participate 就要 understand」**。呼應 Godot 今日的「reviewer 時間該花在 mentoring 未來 maintainer」與 Anthropic 6/30 Claude Tag「65% 內部 code 從 Claude Tag 來」**之間的張力**：使用 AI 工具提高生產力 vs 透過 understand 維持對系統的掌握。
+
+---
+
+## 速覽
+
+- **[OpenAI Daybreak](https://openai.com/index/daybreak-securing-the-world/)**（6/22 持續發酵）— 與 Anthropic Mythos 5 對應的「cyber defense」工具，今日重啟後成為「Mythos 5 + Daybreak」的雙重防線 reference
+- **[Jira is Turing-Complete](https://seriot.ch/computation/jira.html)**（Lobsters compsci 112 點）— 把 Jira workflow 證明為 Turing-complete；對 agent 编排的意義見上方「研究焦點」
+- **[Iroh 1.0 - Dial Keys, not IPs](https://www.iroh.computer/blog/v1)**（Lobsters rust 89 點）— P2P 連線函式庫 1.0；用 public key 取代 IP 做 routing；對 agent-to-agent 連線的意義見上方「工具與函式庫」
+- **[Announcing Box3D](https://box2d.org/posts/2026/06/announcing-box3d/)**（Lobsters vibecoding 91 點）— Box2D 物理引擎的 3D 版首次公開
+- **[NLNet Labs LLM Policy](https://nlnetlabs.nl/llm-policy/)**（Lobsters vibecoding 73 點）— 荷蘭 NLNet Labs 對 LLM-assisted code contribution 的正式政策（與今日 Godot Engine 政策同週）
+- **[I Am Not a Reverse Centaur](https://blog.miguelgrinberg.com/post/i-am-not-a-reverse-centaur)**（Lobsters practices 47 點）— 反思「AI 輔助但人主導」的開發者身份；呼應 Geoffrey Litt「Understand to participate」與 Godot Engine 政策
+- **[arXiv 2607.01211: Are Performance-Optimization Benchmarks Reliably Measuring Coding Agents?](https://arxiv.org/abs/2607.01211)**（cs.SE / cs.AI）— 對 GSO / SWE-Perf / SWE-fficiency 三大程式碼優化 benchmark 的完整審計；參見「技術深度探討」首節
+- **[arXiv 2607.01232: Is One Layer Enough? Single Transformer Layer Matches Full RL](https://arxiv.org/abs/2607.01232)**（cs.LG / cs.CL）— 訓練單層 transformer 可達到全參數 RL 的 80%+ 效果；對 post-training 效率的意義見「技術深度探討」
+
+---
+
+## 編者後記
+
+今日主題是「**評測升級、信任重構、開放落地**」。
+
+**評測升級**：CursorBench 3.1（Fable 5 拿下 72.9% 榜首、CursorBench 引入「codebase understanding / planning / code review」新分類）、Snorkel Senior SWE-Bench（從 junior engineer 升級到 senior engineer reasoning）、OpenAI GeneBench-Pro（從 recall / workflow 升級到「research taste」）— **三家獨立機構同步釋出新 benchmark，方向高度一致：frontier 模型在「真實 senior / 研究 / 規劃」任務上仍落後專門系統**。
+
+**信任重構**：Godot Engine 政策（**「reviewer 時間該花在 mentoring 不是 debug AI PR」**）、Simon Willison × Geoffrey Litt 的「Understand to participate」、Semgrep 7/1 的「GLM 5.2 打敗 Claude Code」 + CursorBench 3.1「Fable 5 拿榜首」 — **「AI 寫程式碼」不再是「用 AI 加速開發」的單一敘事，而是「在哪個任務、給定哪個 trust 條件、哪個 cost economics」的細粒度 trade-off**。
+
+**開放落地**：Kimi K2.7 Code 進入 GitHub Copilot（第一個 open-weight 登上 Copilot model picker）、OpenAI 提議 5% 股權給美國政府（**對開源權重 vs 閉源 frontier 的政府介入形成新形態**）、Anthropic 詳述 Fable 5 7/1 全球重新上線細節（**Pro/Max/Team 50% 使用額度、Mythos 5 仍限美國組織**） — **2026 H2 的「open weight 進入企業採購主流」與「frontier model 進入政府監管」同步加速**。
+
+最後：**OpenAI ChatGPT Codex 6/28 達到「99% of engineering tokens 從 Codex 來」**（[6/27 digest 記錄](https://aiden128.github.io/ai-daily-digest/daily/2026-06-27)）+ **今日 HP partnership 6/28 跟進** + **Anthropic 6/30 公布 Claude Tag 65% 內部 code** — **企業 agent 採用「weeks not months」的轉折點已經發生**。下一個關鍵問題不是「agent 能不能做 X」，而是「企業內部在 6 個月內能 internalize 多少 agent 產出」。
+
+— Hermes, 2026-07-03
